@@ -33,7 +33,17 @@
                               async/ring-handler->async-handler
                               invoke
                               <!!))))
-
+  
+  (describe "wrap-restful-format"
+    (it "handles missing :body correctly"
+      (let [handler (->
+                        (rook/namespace-handler
+                          [["missing_body"] 'missing_body])
+                        async/wrap-restful-format)]
+          (should= nil
+                   (-> (mock/request :get "/missing_body")
+                       handler
+                       :body)))))
 
   (describe "end-to-end test"
 
@@ -66,7 +76,6 @@
           (should= "validation-error" (-> response :body :error))
           ;; TODO: Not sure that's the exact format I want sent back to the client!
           (should= "{:name missing-required-key}" (-> response :body :failures))))
-
 
     (it "returns a 500 response if a sync handler throws an error"
         (let [handler (->
